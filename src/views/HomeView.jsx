@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Plus } from 'lucide-react';
+import { Plus, Droplet } from 'lucide-react';
 import { TaskItem } from '../components/TaskItem';
 import { ProgressWheel } from '../components/ProgressWheel';
 import { DailyNotes } from '../components/DailyNotes';
 
-export function HomeView({ date, tasks, record, onUpdateRecord, onAddTemporaryTask }) {
+export function HomeView({ date, tasks, record, onUpdateRecord, onAddTemporaryTask, glassSizeMl }) {
     const [isAddingTemp, setIsAddingTemp] = useState(false);
     const [tempTaskName, setTempTaskName] = useState('');
     const [tempTaskDate, setTempTaskDate] = useState(date);
@@ -84,14 +84,31 @@ export function HomeView({ date, tasks, record, onUpdateRecord, onAddTemporaryTa
                 onChange={(notes) => onUpdateRecord({ notes })}
             />
 
-            {/* FAB for Temporary Task */}
-            <div className="fixed bottom-6 right-6 z-20">
+            {/* Floating Action Buttons */}
+            <div className="fixed bottom-6 w-full max-w-md flex justify-end items-end px-6 z-20 pointer-events-none self-center space-x-4">
+                {/* Water Tracker FAB */}
+                <button
+                    onClick={() => {
+                        const currentAmount = record.waterAmountMl ?? ((record.waterGlasses || 0) * 250);
+                        onUpdateRecord({ 
+                            waterGlasses: (record.waterGlasses || 0) + 1,
+                            waterAmountMl: currentAmount + glassSizeMl
+                        });
+                    }}
+                    className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex flex-col items-center justify-center text-white shadow-[0_4px_14px_0_rgba(59,130,246,0.39)] hover:shadow-[0_6px_20px_rgba(59,130,246,0.23)] hover:-translate-y-1 transition-all pointer-events-auto shrink-0 animate-in zoom-in-75 duration-300 relative"
+                    aria-label="Add Water Glass"
+                >
+                    <Droplet size={14} className="opacity-80 absolute top-1.5" />
+                    <span className="text-xl font-black leading-none mt-2 select-none">{record.waterGlasses || 0}</span>
+                </button>
+
+                {/* FAB for Temporary Task */}
                 <button
                     onClick={openAddTempModal}
-                    className="w-14 h-14 bg-gradient-to-r from-primary to-indigo-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:-translate-y-1 transition-all"
+                    className="w-12 h-12 bg-gradient-to-r from-primary to-indigo-500 rounded-full flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 hover:shadow-xl hover:-translate-y-1 transition-all pointer-events-auto shrink-0 animate-in zoom-in-75 duration-300"
                     aria-label="Add Temp Task"
                 >
-                    <Plus size={28} />
+                    <Plus size={24} />
                 </button>
             </div>
 

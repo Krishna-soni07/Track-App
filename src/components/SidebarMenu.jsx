@@ -1,7 +1,7 @@
 import { X, Home, Calendar, ListTodo, BarChart3 } from 'lucide-react';
 import { clsx } from 'clsx';
 
-export function SidebarMenu({ isOpen, onClose, currentView, onViewChange }) {
+export function SidebarMenu({ isOpen, onClose, currentView, onViewChange, record, onUpdateRecord }) {
     const menuItems = [
         { id: 'home', label: 'Daily Dashboard', icon: Home },
         { id: 'editTasks', label: 'Edit Task List', icon: ListTodo },
@@ -22,7 +22,7 @@ export function SidebarMenu({ isOpen, onClose, currentView, onViewChange }) {
             {/* Sidebar */}
             <div
                 className={clsx(
-                    "fixed top-0 left-0 bottom-0 w-72 bg-white z-50 shadow-2xl transition-transform duration-300 ease-in-out",
+                    "fixed top-0 left-0 bottom-0 w-72 bg-white z-50 shadow-2xl transition-transform duration-300 ease-in-out flex flex-col",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
@@ -35,7 +35,7 @@ export function SidebarMenu({ isOpen, onClose, currentView, onViewChange }) {
                         <X size={20} />
                     </button>
                 </div>
-                <nav className="p-4 space-y-1">
+                <nav className="p-4 space-y-1 flex-1">
                     {menuItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = currentView === item.id;
@@ -59,6 +59,7 @@ export function SidebarMenu({ isOpen, onClose, currentView, onViewChange }) {
                         );
                     })}
                 </nav>
+
             </div>
         </>
     );

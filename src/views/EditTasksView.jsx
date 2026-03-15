@@ -19,8 +19,44 @@ export function EditTasksView({ tasks, setTasks }) {
         setTasks(tasks.filter(t => t.id !== id));
     };
 
-    // For simplicity, we implement basic remove/add instead of full drag-drop reordering.
-    // One could use specialized libs for drag-drop if it were needed.
+    const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+    const [dragOverItemIndex, setDragOverItemIndex] = useState(null);
+
+    const handleDragStart = (e, index) => {
+        setDraggedItemIndex(index);
+        e.dataTransfer.effectAllowed = "move";
+        // Required for Firefox
+        e.dataTransfer.setData("text/html", e.target.parentNode);
+    };
+
+    const handleDragEnter = (e, index) => {
+        e.preventDefault();
+        setDragOverItemIndex(index);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = (e, index) => {
+        e.preventDefault();
+        if (draggedItemIndex === null) return;
+        
+        const newTasks = [...tasks];
+        const draggedItem = newTasks[draggedItemIndex];
+        
+        newTasks.splice(draggedItemIndex, 1);
+        newTasks.splice(index, 0, draggedItem);
+        
+        setTasks(newTasks);
+        setDraggedItemIndex(null);
+        setDragOverItemIndex(null);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedItemIndex(null);
+        setDragOverItemIndex(null);
+    };
 
     return (
         <div className="p-6 max-w-md mx-auto animate-in fade-in duration-300">
@@ -48,14 +84,25 @@ export function EditTasksView({ tasks, setTasks }) {
             </form>
 
             <div className="space-y-4">
-                {tasks.map(task => (
-                    <div key={task.id} className="group flex items-center bg-white/80 backdrop-blur-sm border border-gray-100/50 p-5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all">
-                        <div className="text-gray-300 mr-4 hidden sm:block group-hover:text-primary/40 transition-colors">
+                {tasks.map((task, index) => (
+                    <div 
+                        key={task.id} 
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragEnter={(e) => handleDragEnter(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                        onDragEnd={handleDragEnd}
+                        className={`group flex items-center bg-white/80 backdrop-blur-sm border p-5 rounded-2xl cursor-move transition-all
+                            ${draggedItemIndex === index ? 'opacity-40 scale-[0.98]' : 'opacity-100'} 
+                            ${dragOverItemIndex === index ? 'border-primary ring-2 ring-primary/30 rotate-1' : 'border-gray-100/50 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md'}`}
+                    >
+                        <div className="text-gray-300 mr-4 group-hover:text-primary/40 transition-colors">
                             <GripVertical size={20} />
                         </div>
-                        <span className="flex-1 text-gray-800 font-bold">{task.name}</span>
+                        <span className="flex-1 text-gray-800 font-bold pointer-events-none">{task.name}</span>
                         <button
-                            onClick={() => handleDeleteTask(task.id)}
+                            onClick={(e) => { e.stopPropagation(); handleDeleteTask(task.id); }}
                             className="text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all p-2 -mr-2 rounded-xl"
                             aria-label="Delete Task"
                         >

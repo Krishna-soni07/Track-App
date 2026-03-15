@@ -71,6 +71,14 @@ export function CalendarView({ dailyRecords, tasks, currentDate, onSelectDate })
                                 {format(day, 'd')}
                             </div>
 
+                            {record && record.waterGlasses > 0 && (
+                                <div className="absolute top-1 right-1.5 flex flex-col items-center">
+                                    <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-1.5 py-0.5 rounded-md shadow-sm">
+                                        {((record.waterAmountMl ?? (record.waterGlasses * 250)) / 1000).toFixed(1)}L
+                                    </span>
+                                </div>
+                            )}
+
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-1">
                                 {record && (record.completedTasks.length > 0 || record.notes) ? (
                                     <div className="scale-[0.4] origin-center opacity-80 mt-3">

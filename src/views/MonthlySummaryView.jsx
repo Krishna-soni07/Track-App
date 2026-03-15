@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, eachMonthOfInterval, addMonths } from 'date-fns';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Droplet } from 'lucide-react';
 
 export function MonthlySummaryView({ currentDate, dailyRecords, tasks }) {
     const [selectedMonth, setSelectedMonth] = useState(null);
@@ -64,6 +64,21 @@ export function MonthlySummaryView({ currentDate, dailyRecords, tasks }) {
         return { ...task, completed, skipped };
     });
 
+    let totalGlasses = 0;
+    let totalWaterMl = 0;
+    let trackedDaysCount = 0;
+    daysInMonth.forEach(day => {
+        const dateStr = format(day, 'yyyy-MM-dd');
+        const record = dailyRecords[dateStr];
+        if (record && record.waterGlasses && record.waterGlasses > 0) {
+            totalGlasses += record.waterGlasses;
+            totalWaterMl += record.waterAmountMl ?? (record.waterGlasses * 250);
+            trackedDaysCount++;
+        }
+    });
+    
+    const avgDailyLiters = trackedDaysCount > 0 ? (totalWaterMl / 1000) / trackedDaysCount : 0;
+
     return (
         <div className="p-6 pb-24 max-w-md mx-auto animate-in slide-in-from-right-4 duration-300">
             <button
@@ -79,6 +94,24 @@ export function MonthlySummaryView({ currentDate, dailyRecords, tasks }) {
                     {format(displayMonth, 'MMMM')} Summary
                 </h2>
                 <p className="text-gray-500 mt-2 font-medium">Consistency is key.</p>
+            </div>
+
+            {/* Water Summary */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 p-6 rounded-[2rem] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] mb-6 flex flex-col items-center justify-center">
+                <div className="flex items-center space-x-2 mb-4">
+                    <Droplet className="text-blue-500 fill-blue-100" size={24} />
+                    <h3 className="font-bold text-gray-800 text-xl tracking-tight">Water Consumption</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4 w-full">
+                    <div className="bg-white/60 rounded-2xl p-4 text-center">
+                        <p className="text-3xl font-extrabold text-blue-600 mb-1">{totalGlasses}</p>
+                        <p className="text-xs font-bold text-blue-800/60 uppercase tracking-wider">Total Glasses</p>
+                    </div>
+                    <div className="bg-white/60 rounded-2xl p-4 text-center">
+                        <p className="text-3xl font-extrabold text-indigo-600 mb-1">{avgDailyLiters.toFixed(2)} L</p>
+                        <p className="text-xs font-bold text-indigo-800/60 uppercase tracking-wider">Daily Average</p>
+                    </div>
+                </div>
             </div>
 
             <div className="space-y-6">

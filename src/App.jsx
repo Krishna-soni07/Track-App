@@ -21,6 +21,7 @@ function App() {
   ]);
 
   const [dailyRecords, setDailyRecords] = useLocalStorage('trackapp_dailyRecords', {});
+  const [glassSizeMl, setGlassSizeMl] = useLocalStorage('trackapp_glassSizeMl', 250);
   const [currentDate, setCurrentDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
 
   const currentRecord = dailyRecords[currentDate] || { completedTasks: [], notes: '' };
@@ -63,11 +64,13 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen font-sans text-text-main flex flex-col items-center selection:bg-primary/20">
-      <div className="w-full max-w-md bg-white/80 backdrop-blur-xl min-h-screen shadow-[0_0_40px_-10px_rgba(0,0,0,0.1)] relative overflow-x-hidden flex flex-col">
+    <div className="h-[100dvh] font-sans text-text-main flex flex-col items-center selection:bg-primary/20 bg-gray-50/30 overflow-hidden">
+      <div className="w-full max-w-md bg-white/80 backdrop-blur-xl h-full shadow-[0_0_40px_-10px_rgba(0,0,0,0.1)] relative flex flex-col">
         <Navbar
           title={getViewTitle()}
           onMenuClick={() => setIsSidebarOpen(true)}
+          glassSizeMl={glassSizeMl}
+          setGlassSizeMl={setGlassSizeMl}
         />
 
         <SidebarMenu
@@ -75,6 +78,8 @@ function App() {
           onClose={() => setIsSidebarOpen(false)}
           currentView={currentView}
           onViewChange={setCurrentView}
+          record={currentRecord}
+          onUpdateRecord={(updates) => updateDailyRecord(currentDate, updates)}
         />
 
         <main className="flex-1 overflow-y-auto">
@@ -85,6 +90,7 @@ function App() {
               record={currentRecord}
               onUpdateRecord={(updates) => updateDailyRecord(currentDate, updates)}
               onAddTemporaryTask={(taskName, targetDate) => handleAddTemporaryTask(targetDate || currentDate, taskName)}
+              glassSizeMl={glassSizeMl}
             />
           )}
           {currentView === 'editTasks' && (
