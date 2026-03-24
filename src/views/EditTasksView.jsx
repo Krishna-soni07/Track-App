@@ -21,6 +21,7 @@ export function EditTasksView({ tasks, setTasks }) {
 
     const [draggedItemIndex, setDraggedItemIndex] = useState(null);
     const [dragOverItemIndex, setDragOverItemIndex] = useState(null);
+    const [touchOverItemIndex, setTouchOverItemIndex] = useState(null);
 
     const handleDragStart = (e, index) => {
         setDraggedItemIndex(index);
@@ -34,28 +35,73 @@ export function EditTasksView({ tasks, setTasks }) {
         setDragOverItemIndex(index);
     };
 
+    const handleTouchStart = (e, index) => {
+        setDraggedItemIndex(index);
+        setTouchOverItemIndex(index);
+    };
+
+    const handleTouchMove = (e) => {
+        if (!e.touches || e.touches.length === 0) return;
+
+        const touch = e.touches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+        const taskElement = element?.closest('[data-task-index]');
+
+        if (taskElement) {
+            const index = Number(taskElement.getAttribute('data-task-index'));
+            if (!Number.isNaN(index)) {
+                setDragOverItemIndex(index);
+                setTouchOverItemIndex(index);
+            }
+        }
+    };
+
+    const handleTouchEnd = () => {
+        const targetIndex = touchOverItemIndex;
+        if (draggedItemIndex === null || targetIndex === null) {
+            setDraggedItemIndex(null);
+            setDragOverItemIndex(null);
+            setTouchOverItemIndex(null);
+            return;
+        }
+
+        if (draggedItemIndex !== targetIndex) {
+            const newTasks = [...tasks];
+            const draggedItem = newTasks[draggedItemIndex];
+            newTasks.splice(draggedItemIndex, 1);
+            newTasks.splice(targetIndex, 0, draggedItem);
+            setTasks(newTasks);
+        }
+
+        setDraggedItemIndex(null);
+        setDragOverItemIndex(null);
+        setTouchOverItemIndex(null);
+    };
+
     const handleDragOver = (e) => {
         e.preventDefault();
     };
 
     const handleDrop = (e, index) => {
-        e.preventDefault();
+        if (e && e.preventDefault) e.preventDefault();
         if (draggedItemIndex === null) return;
-        
+
         const newTasks = [...tasks];
         const draggedItem = newTasks[draggedItemIndex];
-        
+
         newTasks.splice(draggedItemIndex, 1);
         newTasks.splice(index, 0, draggedItem);
-        
+
         setTasks(newTasks);
         setDraggedItemIndex(null);
         setDragOverItemIndex(null);
+        setTouchOverItemIndex(null);
     };
 
     const handleDragEnd = () => {
         setDraggedItemIndex(null);
         setDragOverItemIndex(null);
+        setTouchOverItemIndex(null);
     };
 
     return (
@@ -87,12 +133,17 @@ export function EditTasksView({ tasks, setTasks }) {
                 {tasks.map((task, index) => (
                     <div 
                         key={task.id} 
+                        data-task-index={index}
                         draggable
                         onDragStart={(e) => handleDragStart(e, index)}
                         onDragEnter={(e) => handleDragEnter(e, index)}
                         onDragOver={handleDragOver}
                         onDrop={(e) => handleDrop(e, index)}
                         onDragEnd={handleDragEnd}
+                        onTouchStart={(e) => handleTouchStart(e, index)}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                        style={{ touchAction: 'none' }}
                         className={`group flex items-center bg-white/80 backdrop-blur-sm border p-5 rounded-2xl cursor-move transition-all
                             ${draggedItemIndex === index ? 'opacity-40 scale-[0.98]' : 'opacity-100'} 
                             ${dragOverItemIndex === index ? 'border-primary ring-2 ring-primary/30 rotate-1' : 'border-gray-100/50 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] hover:shadow-md'}`}
